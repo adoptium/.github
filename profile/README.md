@@ -1,4 +1,4 @@
-![Adoptium Banne](/images/banner.png)
+![Adoptium Banner](/images/banner.png)
 
 ## Get Involved
 
