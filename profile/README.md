@@ -4,7 +4,7 @@
 
 There are several ways to get involved in the Adoptium project:
 
-* Look for `good first issue` label in repositories which indicates a good issue for first-time contributors.
+* Look for the `good first issue` label in repositories which indicates a good issue for first-time contributors.
 * Join the [Adoptium Slack Channel](https://adoptium.net/slack)
 
 Visit [adoptium.net](https://adoptium.net) to learn more!
