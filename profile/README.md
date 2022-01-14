@@ -5,7 +5,7 @@
 There are several ways to get involved in the Adoptium project. Use these guides below as a starting point:
 
 * Read the [First Timers Support Guide](https://github.com/adoptium/documentation/blob/main/first-timers-support/index.adoc)
-* Read how to [Sign the Eclipse Contributor Agreement](https://github.com/adoptium/documentation/blob/main/documentation-documentation/eca-sign-off.adoc)
+* Learn how to [Sign the Eclipse Contributor Agreement](https://github.com/adoptium/documentation/blob/main/documentation-documentation/eca-sign-off.adoc)
 * Join the [Adoptium Slack Channel](https://adoptium.net/slack)
 
 Visit [adoptium.net](https://adoptium.net) to learn more!
