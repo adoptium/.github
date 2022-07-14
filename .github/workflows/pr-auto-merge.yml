@@ -1,0 +1,21 @@
+name: Pull Request auto-merge
+on:
+  workflow_call:
+    inputs:
+      allowed-author:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') && github.actor == inputs.allowed-author }}
+    steps:
+      - name: Enable auto-merge for pull request
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
