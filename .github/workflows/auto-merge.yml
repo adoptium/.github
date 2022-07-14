@@ -1,9 +1,6 @@
 name: Dependabot auto-merge
 on: pull_request
 
-permissions:
-  contents: write
-
 jobs:
   dependabot:
     uses: ./.github/workflows/dependabot-auto-merge.yml
