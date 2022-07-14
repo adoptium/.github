@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  dependabot:
+  automerge:
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') && github.actor == inputs.allowed-author }}
     steps:
