@@ -1,4 +1,4 @@
-## Get Involved
+# Get Involved
 
 There are several ways to get involved in the Adoptium project. Use these guides below as a starting point:
 
