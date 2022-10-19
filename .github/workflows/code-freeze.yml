@@ -1,0 +1,154 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Code Freeze Bot
+on: workflow_call
+
+env:
+  PMC_MEMBERS: '[ "gdams", "sxa", "johnoliver", "tellison", "jerboaa", "smlambert", "karianna", "llxia", "sanhong" ]'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    # Change to false when code freeze is not in place
+    if: true
+    steps:
+      - name: Check for blocking review
+        if: github.event_name == 'issue_comment'
+        id: blocking-review
+        run: |
+          curl --request GET \
+            --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
+            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+            > reviews.json
+          REVIEW_STATE=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").state' | tail -n 1)
+          echo "check=$REVIEW_STATE" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Block pull request
+        if: github.event_name == 'pull_request_target' || (steps.blocking-review.outputs.check == 'DISMISSED' || !steps.blocking-review.outputs.check)
+        run: |
+          if [[ -z $PR_URL ]]; then
+            PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          fi
+          echo -e "A block has been put on this Pull Request as this repository is temporarily under a code freeze due to an ongoing release cycle.\n\nIf this pull request needs to be merged during the release cycle then please comment \`/merge\` and a PMC member will be able to remove the block.\n\nIf the code freeze is over you can remove this block by commenting \`/thaw\`." > msg
+          export msg=$(cat msg); gh pr review --request-changes --body "$msg" "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: thaw
+        with:
+          trigger: '/thaw'
+          prefix_only: 'true'
+          reaction: '-1'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Add comment
+        if: steps.thaw.outputs.triggered == 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: Sorry @${{ github.actor }}, the code freeze is still in place.
+
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: check
+        with:
+          trigger: '/merge'
+          prefix_only: 'true'
+          reaction: '+1'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Add comment
+        if: steps.check.outputs.triggered == 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Approval to merge during the lockdown cycle
+            
+            Please can two [Adoptium PMC](https://projects.eclipse.org/projects/adoptium/who) members comment `/approve`?
+            
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: approval
+        with:
+          trigger: '/approve'
+          prefix_only: 'true'
+          reaction: '+1'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+      - name: Add comment if user not approved
+        if: steps.approval.outputs.triggered == 'true' && !contains(fromJson(env.PMC_MEMBERS), github.actor)
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: Sorry @${{ github.actor }}, you are not a PMC member and therefore cannot approve this request.
+
+      - name: Fetch total approvals
+        if: steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
+        id: store-approvals
+        uses: actions/cache@v3
+        with:
+          path: review-log.txt
+          key: ${{ github.event.issue.number }}
+          
+      - name: Store approval
+        if: steps.store-approvals.outputs.cache-hit != 'true' && steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
+        run: echo ${{ github.actor }} > review-log.txt
+
+      - name: Dismiss blocking review
+        if: steps.store-approvals.outputs.cache-hit == 'true' && steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
+        run: |
+          FIRST_APPROVER=$(cat review-log.txt)
+          if [[ ${{ github.actor }} != $FIRST_APPROVER ]]; then
+            curl --request GET \
+              --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
+              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+              > reviews.json
+            REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").id' | tail -n 1)
+            curl --request PUT \
+              --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
+              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+              -d "{\"message\":\"Thank you @${FIRST_APPROVER} and @${{ github.actor }} for your approvals, this pull request is now approved to merge during release.\",\"event\":\"DISMISS\"}"
+          else
+            echo "duplicate review detected from the same user ${FIRST_APPROVER} and ${{ github.actor }}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  thaw:
+    needs: freeze
+    runs-on: ubuntu-latest
+    if: always() && needs.freeze.result == 'skipped'
+    steps:
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: thaw
+        with:
+          trigger: '/thaw'
+          prefix_only: 'true'
+          reaction: '+1'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          
+      - name: Dismiss blocking review
+        if: steps.thaw.outputs.triggered == 'true' 
+        run: |
+          curl --request GET \
+            --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
+            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+            > reviews.json
+          REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").id' | tail -n 1)
+          curl --request PUT \
+            --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
+            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+            -d '{"message":"Pull Request unblocked - code freeze is over.","event":"DISMISS"}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
