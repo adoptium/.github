@@ -133,6 +133,7 @@ jobs:
         id: thaw
         with:
           trigger: '/thaw'
+          prefix_only: 'true'
           reaction: '+1'
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
