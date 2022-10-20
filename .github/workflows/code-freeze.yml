@@ -42,6 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - uses: khan/pull-request-comment-trigger@v1.1.0
+        if: github.event_name == 'issue_comment'
         id: thaw
         with:
           trigger: '/thaw'
@@ -58,6 +59,7 @@ jobs:
           body: Sorry @${{ github.actor }}, the code freeze is still in place.
 
       - uses: khan/pull-request-comment-trigger@v1.1.0
+        if: github.event_name == 'issue_comment'
         id: check
         with:
           trigger: '/merge'
@@ -77,6 +79,7 @@ jobs:
             Please can two [Adoptium PMC](https://projects.eclipse.org/projects/adoptium/who) members comment `/approve`?
             
       - uses: khan/pull-request-comment-trigger@v1.1.0
+        if: github.event_name == 'issue_comment'
         id: approval
         with:
           trigger: '/approve'
@@ -127,7 +130,7 @@ jobs:
   thaw:
     needs: freeze
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'adoptium' && always() && needs.freeze.result == 'skipped'
+    if: github.repository_owner == 'adoptium' && github.event_name == 'issue_comment' && always() && needs.freeze.result == 'skipped'
     steps:
       - uses: khan/pull-request-comment-trigger@v1.1.0
         id: thaw
