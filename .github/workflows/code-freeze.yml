@@ -4,7 +4,7 @@ name: Code Freeze Bot
 on:
   workflow_call:
     secrets:
-      SLACK_WEBHOOK_URL:
+      SLACK_WEBHOOK_CODEFREEZE_URL:
         required: true
 
 env:
