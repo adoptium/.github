@@ -68,7 +68,7 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
-      - name: Add comment
+      - name: Add approval to merge comment
         if: steps.check.outputs.triggered == 'true'
         uses: peter-evans/create-or-update-comment@v2
         with:
@@ -77,6 +77,17 @@ jobs:
             Approval to merge during the lockdown cycle
             
             Please can two [Adoptium PMC](https://projects.eclipse.org/projects/adoptium/who) members comment `/approve`?
+
+      - name: Send approval to merge comment to Slack
+        if: steps.check.outputs.triggered == 'true'
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "link": "https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_CODEFREEZE_URL }}
             
       - uses: khan/pull-request-comment-trigger@v1.1.0
         if: github.event_name == 'issue_comment'
