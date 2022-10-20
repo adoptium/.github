@@ -21,20 +21,24 @@ jobs:
     if: github.repository_owner == 'adoptium' && true
     steps:
       - name: Check for blocking review
-        if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'issue_comment' && github.event.issue.pull_request)
         id: blocking-review
         run: |
+          if [[ -z $PR_NUMBER ]]; then
+            PR_NUMBER="${{ github.event.pull_request_target.number }}"
+          fi
           curl --request GET \
-            --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
+            --url "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews" \
             --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
             > reviews.json
           REVIEW_STATE=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").state' | tail -n 1)
           echo "check=$REVIEW_STATE" >> $GITHUB_OUTPUT
         env:
+          PR_NUMBER: ${{ github.event.issue.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Block pull request
-        if: github.event_name == 'pull_request_target' || (github.event.issue.pull_request && (steps.blocking-review.outputs.check == 'DISMISSED' || !steps.blocking-review.outputs.check))
+        if: (github.event_name == 'pull_request_target' || github.event.issue.pull_request) && (steps.blocking-review.outputs.check == 'DISMISSED' || !steps.blocking-review.outputs.check)
         run: |
           if [[ -z $PR_URL ]]; then
             PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
