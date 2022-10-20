@@ -58,8 +58,16 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body: Sorry @${{ github.actor }}, the code freeze is still in place.
 
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - name: Fetch merge request cache
         if: github.event_name == 'issue_comment'
+        id: merge-request
+        uses: actions/cache@v3
+        with:
+          path: merge-request.txt
+          key: "${{ github.event.issue.number }}-merge-request"
+
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        if: steps.merge-request.outputs.cache-hit != 'true' && github.event_name == 'issue_comment'
         id: check
         with:
           trigger: '/merge'
@@ -88,9 +96,13 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_CODEFREEZE_URL }}
+
+      - name: Store merge request
+        if: steps.check.outputs.triggered == 'true'
+        run: echo true > merge-request.txt
             
       - uses: khan/pull-request-comment-trigger@v1.1.0
-        if: github.event_name == 'issue_comment'
+        if: steps.merge-request.outputs.cache-hit == 'true' && github.event_name == 'issue_comment'
         id: approval
         with:
           trigger: '/approve'
