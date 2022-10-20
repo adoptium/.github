@@ -58,8 +58,16 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body: Sorry @${{ github.actor }}, the code freeze is still in place.
 
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - name: Fetch merge request cache
         if: github.event_name == 'issue_comment'
+        id: merge-request
+        uses: actions/cache@v3
+        with:
+          path: merge-request.txt
+          key: "${{ github.event.issue.number }}-merge-request"
+
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        if: steps.merge-request.outputs.cache-hit != 'true' && github.event_name == 'issue_comment'
         id: check
         with:
           trigger: '/merge'
@@ -68,7 +76,7 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
-      - name: Add comment
+      - name: Add approval to merge comment
         if: steps.check.outputs.triggered == 'true'
         uses: peter-evans/create-or-update-comment@v2
         with:
@@ -77,9 +85,24 @@ jobs:
             Approval to merge during the lockdown cycle
             
             Please can two [Adoptium PMC](https://projects.eclipse.org/projects/adoptium/who) members comment `/approve`?
+
+      - name: Send approval to merge comment to Slack
+        if: steps.check.outputs.triggered == 'true'
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "link": "https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_CODEFREEZE_URL }}
+
+      - name: Store merge request
+        if: steps.check.outputs.triggered == 'true'
+        run: echo true > merge-request.txt
             
       - uses: khan/pull-request-comment-trigger@v1.1.0
-        if: github.event_name == 'issue_comment'
+        if: steps.merge-request.outputs.cache-hit == 'true' && github.event_name == 'issue_comment'
         id: approval
         with:
           trigger: '/approve'
