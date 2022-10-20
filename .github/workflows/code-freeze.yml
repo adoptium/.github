@@ -1,7 +1,11 @@
 # This is a basic workflow to help you get started with Actions
 
 name: Code Freeze Bot
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
 
 env:
   PMC_MEMBERS: '[ "gdams", "sxa", "johnoliver", "tellison", "jerboaa", "smlambert", "karianna", "llxia", "sanhong" ]'
