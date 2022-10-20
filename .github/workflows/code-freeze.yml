@@ -14,7 +14,7 @@ jobs:
   freeze:
     runs-on: ubuntu-latest
     # Change to false when code freeze is not in place
-    if: true
+    if: github.repository_owner == 'adoptium' && true
     steps:
       - name: Check for blocking review
         if: github.event_name == 'issue_comment'
@@ -127,7 +127,7 @@ jobs:
   thaw:
     needs: freeze
     runs-on: ubuntu-latest
-    if: always() && needs.freeze.result == 'skipped'
+    if: github.repository_owner == 'adoptium' && always() && needs.freeze.result == 'skipped'
     steps:
       - uses: khan/pull-request-comment-trigger@v1.1.0
         id: thaw
