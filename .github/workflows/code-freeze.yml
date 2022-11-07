@@ -8,7 +8,7 @@ on:
         required: true
 
 env:
-  PMC_MEMBERS: '[ "gdams", "sxa", "johnoliver", "tellison", "jerboaa", "smlambert", "karianna", "llxia", "sanhong" ]'
+  PMC_MEMBERS: '[ "gdams", "sxa", "johnoliver", "tellison", "jerboaa", "smlambert", "karianna", "llxia", "sanhong", "andrew-m-leonard" ]'
 
 permissions:
   contents: write
