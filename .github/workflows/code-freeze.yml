@@ -49,7 +49,7 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - uses: khan/pull-request-comment-trigger@edab8d9ba7759221187ef7120592a6fbfada0d18 # v1.1.0
         if: github.event_name == 'issue_comment'
         id: thaw
         with:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Add comment
         if: steps.thaw.outputs.triggered == 'true'
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # v2.1.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: Sorry @${{ github.actor }}, the code freeze is still in place.
@@ -69,12 +69,12 @@ jobs:
       - name: Fetch merge request cache
         if: github.event_name == 'issue_comment'
         id: merge-request
-        uses: actions/cache@v3
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # v3.0.11
         with:
           path: merge-request.txt
           key: "${{ github.event.issue.number }}-merge-request"
 
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - uses: khan/pull-request-comment-trigger@edab8d9ba7759221187ef7120592a6fbfada0d18 # v1.1.0
         if: steps.merge-request.outputs.cache-hit != 'true' && github.event_name == 'issue_comment'
         id: check
         with:
@@ -86,7 +86,7 @@ jobs:
 
       - name: Add approval to merge comment
         if: steps.check.outputs.triggered == 'true'
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # v2.1.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
@@ -96,7 +96,7 @@ jobs:
 
       - name: Send approval to merge comment to Slack
         if: steps.check.outputs.triggered == 'true'
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844 # v1.23.0
         with:
           payload: |
             {
@@ -109,7 +109,7 @@ jobs:
         if: steps.check.outputs.triggered == 'true'
         run: echo true > merge-request.txt
             
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - uses: khan/pull-request-comment-trigger@edab8d9ba7759221187ef7120592a6fbfada0d18 # v1.1.0
         if: steps.merge-request.outputs.cache-hit == 'true' && github.event_name == 'issue_comment'
         id: approval
         with:
@@ -121,7 +121,7 @@ jobs:
 
       - name: Add comment if user not approved
         if: steps.approval.outputs.triggered == 'true' && !contains(fromJson(env.PMC_MEMBERS), github.actor)
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # v2.1.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: Sorry @${{ github.actor }}, you are not a PMC member and therefore cannot approve this request.
@@ -129,7 +129,7 @@ jobs:
       - name: Fetch total approvals
         if: steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
         id: store-approvals
-        uses: actions/cache@v3
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # v3.0.11
         with:
           path: review-log.txt
           key: ${{ github.event.issue.number }}
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'adoptium' && github.event_name == 'issue_comment' && always() && needs.freeze.result == 'skipped'
     steps:
-      - uses: khan/pull-request-comment-trigger@v1.1.0
+      - uses: khan/pull-request-comment-trigger@edab8d9ba7759221187ef7120592a6fbfada0d18 # v1.1.0
         id: thaw
         with:
           trigger: '/thaw'
