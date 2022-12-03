@@ -6,14 +6,16 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   automerge:
-    runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') && github.actor == inputs.allowed-author }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Approve pull request
         run: gh pr review --approve "$PR_URL"
