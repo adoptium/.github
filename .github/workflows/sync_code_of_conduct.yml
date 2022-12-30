@@ -23,7 +23,6 @@ jobs:
         with:
           title: "Update CODE_OF_CONDUCT.md"
           body: "This is an automatically generated pull request, an update has been made to the CODE_OF_CONDUCT.md file."
-          path: "/"
           branch: "code_of_conduct"
           commit-message: "update CODE_OF_CONDUCT.md"
           author: "eclipse-temurin-bot <temurin-bot@eclipse.org>"
