@@ -1,0 +1,29 @@
+name: Sync Code of Conduct
+
+on:  
+  push:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
+jobs:
+  code-of-conduct:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'adoptium'
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
+
+      - name: Replace CODE_OF_CONDUCT.md
+        run: |
+          rm -rf CODE_OF_CONDUCT.md
+          wget https://raw.githubusercontent.com/eclipse/.github/master/CODE_OF_CONDUCT.md
+
+      - uses: gr2m/create-or-update-pull-request-action@dc1726cbf4dd3ce766af4ec29cfb660e0125e8ee # v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ADOPTIUM_TEMURIN_BOT_TOKEN }}
+        with:
+          title: "Update CODE_OF_CONDUCT.md"
+          body: "This is an automatically generated pull request, an update has been made to the CODE_OF_CONDUCT.md file."
+          path: "/"
+          branch: "code_of_conduct"
+          commit-message: "update CODE_OF_CONDUCT.md"
+          author: "eclipse-temurin-bot <temurin-bot@eclipse.org>"
