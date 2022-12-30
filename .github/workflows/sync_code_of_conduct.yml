@@ -1,7 +1,6 @@
 name: Sync Code of Conduct
 
-on:  
-  push:
+on:
   schedule:
     - cron: '0 0 * * *'  # every day at midnight
 
