@@ -1,0 +1,74 @@
+#
+# Org level configuration of branch protection policy
+#
+# https://github.com/ossf/allstar/blob/main/README.md#branch-protection
+#
+
+
+# OptConfig : the org-level opt in/out config.
+#
+optConfig:
+  optOutStrategy: true
+
+# Action: defines which action to take.
+# Valid values log|issue|fix. Default: log.
+# https://github.com/ossf/allstar/blob/main/README.md#actions
+#
+action: issue
+
+# EnforceDefault : enforce policy on default branch.
+# Default: true
+#
+# enforceDefault: true
+
+# EnforceBranches : set of non-default branches to enforce policy on.
+# Non-default branches to enforce policy on, such as branches which releases
+# are made from.
+#
+# enforceBranches: [ dev, releases ]
+
+# RequireApproval : enforce approval of PRs.
+# Default: true.
+#
+# requireApproval: true
+
+# RequireCodeOwnerReviews : enforce code owner reviews on PRs.
+# If set to true, then "requireApproval" must also be true. Default: false.
+#
+# requireCodeOwnerReviews: false
+  
+# ApprovalCount : the number of required PR approvals.
+# Default: 1
+#
+approvalCount: 2
+
+# DismissStale : require PR approvals be dismissed when a PR is updated.
+# Default: true.
+#
+# dismissStale: true
+
+# BlockForce : block force pushes.
+# Default: true.
+#
+# blockForce: true
+
+# EnforceOnAdmins : apply the branch protection rules to administrators.
+# Default: true.
+#
+# enforceOnAdmins: true
+
+# RequireUpToDateBranch : branches must be up to date before merging.
+# Only used if RequireStatusChecks is true. Default: true.
+#
+# requireUpToDateBranch: true
+
+# RequireStatusChecks : a list of status checks that are required in
+# order to merge into the protected branch.
+# Each entry must specify the context, and optionally an appID.
+#
+# requireStatusChecks: []
+
+# RequireSignedCommits : require signed commits on protected branches.
+# Default: false.
+#
+# requireSignedCommits: false

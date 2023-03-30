@@ -1,0 +1,31 @@
+#
+# Organisation configuration of outside collaborators policy.
+#
+# https://github.com/ossf/allstar/blob/main/README.md#outside-collaborators
+#
+  
+# OptConfig is the org-level opt in/out config.
+#
+optConfig:
+  optOutStrategy: true
+
+# Action: defines which action to take.
+# Valid values log|issue|fix. Default: log.
+# https://github.com/ossf/allstar/blob/main/README.md#actions
+#
+action: issue
+
+# PushAllowed : outside collaborators are allowed to have push access.
+# Default: true.
+#
+pushAllowed: false
+
+# AdminAllowed : outside collaborators are allowed to have admin access.
+# Default: false.
+#
+#adminAllowed: false
+
+# Exemptions : list of user-repo-access pairings to exempt.
+# Only valid at the org level for security management clarity.
+#
+# exemptions: []
