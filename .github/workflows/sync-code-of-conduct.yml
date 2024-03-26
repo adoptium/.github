@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 0 * * *'  # every day at midnight
 
+permissions:
+  contents: write # to push local changes (gr2m/create-or-update-pull-request-action)
+  pull-requests: write # to create a PR (gr2m/create-or-update-pull-request-action)
+
 jobs:
   code-of-conduct:
     runs-on: ubuntu-latest
