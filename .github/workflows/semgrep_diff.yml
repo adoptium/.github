@@ -1,7 +1,7 @@
 ---
 name: Semgrep Differential Scan
 on:
-  pull_request:
+  workflow_call:
 
 jobs:
   semgrep-diff:
