@@ -7,7 +7,7 @@ jobs:
   semgrep-diff:
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep
+      image: semgrep/semgrep
 
     steps:
       # Step 1: Clone application source code
