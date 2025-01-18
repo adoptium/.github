@@ -43,7 +43,7 @@ jobs:
           if [[ -z $PR_URL ]]; then
             PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
           fi
-          echo -e "A block has been put on this Pull Request as this repository is temporarily under a code freeze due to an ongoing release cycle.\n\nIf this pull request needs to be merged during the release cycle then please comment \`/merge\` and a [PMC member](https://projects.eclipse.org/projects/adoptium/who#project-role-PL)) will be able to remove the block.\n\nIf the code freeze is over you can remove this block by commenting \`/thaw\`." > msg
+          echo -e "A block has been put on this Pull Request as this repository is temporarily under a code freeze due to an ongoing release cycle.\n\nIf this pull request needs to be merged during the release cycle then please comment \`/merge\` and a [PMC member](https://projects.eclipse.org/projects/adoptium/who#project-role-PL) will be able to remove the block.\n\nIf the code freeze is over you can remove this block by commenting \`/thaw\`." > msg
           export msg=$(cat msg); gh pr review --request-changes --body "$msg" "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
