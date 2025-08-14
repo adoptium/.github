@@ -1,4 +1,4 @@
-# Runs the OSSF scorecard analysis and uplaods the results.
+# Runs the OSSF scorecard analysis and uploads the results.
 
 name: OSSF Scorecard
 
