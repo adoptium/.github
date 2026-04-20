@@ -38,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Block pull request
-        if: (github.event_name == 'pull_request_target' || github.event.issue.pull_request) && (steps.blocking-review.outputs.check == 'DISMISSED' || !steps.blocking-review.outputs.check)
+        if: (github.event_name == 'pull_request_target' || github.event.issue.pull_request) && (steps.blocking-review.outputs.check == 'DISMISSED' || !steps.blocking-review.outputs.check) && github.event.pull_request.user.login != 'dependabot[bot]' && github.event.issue.user.login != 'dependabot[bot]'
         run: |
           if [[ -z $PR_URL ]]; then
             PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.issue.number }}"
