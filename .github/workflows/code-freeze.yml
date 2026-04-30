@@ -78,7 +78,7 @@ jobs:
 
       - name: Add comment
         if: steps.thaw.outputs.triggered == 'true' && github.event.issue.user.login != 'dependabot[bot]'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: Sorry @${{ github.actor }}, the code freeze is still in place.
@@ -103,7 +103,7 @@ jobs:
 
       - name: Add approval to merge comment
         if: steps.check.outputs.triggered == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
@@ -138,7 +138,7 @@ jobs:
 
       - name: Add comment if user not approved
         if: steps.approval.outputs.triggered == 'true' && !contains(fromJson(env.PMC_MEMBERS), github.actor)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           issue-number: ${{ github.event.issue.number }}
           body: Sorry @${{ github.actor }}, you are not a PMC member and therefore cannot approve this request.
