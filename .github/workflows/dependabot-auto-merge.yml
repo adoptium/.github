@@ -1,5 +1,12 @@
 name: Dependabot auto-merge
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      merge_method:
+        description: 'Merge method to use (squash, merge, rebase)'
+        required: false
+        type: string
+        default: 'squash'
 
 permissions:
   contents: write
@@ -27,7 +34,7 @@ jobs:
       - name: Enable auto-merge for Dependabot PRs
         # Don't merge semver major patches
         if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --auto --${{ inputs.merge_method }} "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
