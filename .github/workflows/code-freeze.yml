@@ -86,7 +86,7 @@ jobs:
       - name: Fetch merge request cache
         if: github.event_name == 'issue_comment'
         id: merge-request
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: merge-request.txt
           key: "${{ github.event.issue.number }}-merge-request"
@@ -146,7 +146,7 @@ jobs:
       - name: Fetch total approvals
         if: steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
         id: store-approvals
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: review-log.txt
           key: ${{ github.event.issue.number }}
