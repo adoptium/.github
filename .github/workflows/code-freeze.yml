@@ -155,6 +155,13 @@ jobs:
         if: steps.store-approvals.outputs.cache-hit != 'true' && steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
         run: echo ${{ github.actor }} > review-log.txt
 
+      - name: Save approval cache
+        if: steps.store-approvals.outputs.cache-hit != 'true' && steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: review-log.txt
+          key: ${{ github.event.issue.number }}
+
       - name: Dismiss blocking review
         if: steps.store-approvals.outputs.cache-hit == 'true' && steps.approval.outputs.triggered == 'true' && contains(fromJson(env.PMC_MEMBERS), github.actor)
         run: |
