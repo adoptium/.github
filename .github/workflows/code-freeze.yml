@@ -18,7 +18,7 @@ jobs:
   freeze:
     runs-on: ubuntu-latest
     # Change to false when code freeze is not in place
-    if: github.repository_owner == 'adoptium' && true
+    if: github.repository_owner == 'adoptium' && false
     steps:
       - name: Check for blocking review
         if: github.event_name == 'pull_request_target' || (github.event_name == 'issue_comment' && github.event.issue.pull_request)
@@ -66,7 +66,7 @@ jobs:
             --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
             --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
             > reviews.json
-          REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").id' | tail -n 1)
+          REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]" and .state == "CHANGES_REQUESTED") | .id' | tail -n 1)
           if [[ -n "$REVIEW_ID" ]]; then
             curl --request PUT \
               --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
@@ -171,11 +171,15 @@ jobs:
               --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
               > reviews.json
-            REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").id' | tail -n 1)
-            curl --request PUT \
-              --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
-              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
-              -d "{\"message\":\"Thank you @${FIRST_APPROVER} and @${{ github.actor }} for your approvals, this pull request is now approved to merge during release.\",\"event\":\"DISMISS\"}"
+            REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]" and .state == "CHANGES_REQUESTED") | .id' | tail -n 1)
+            if [[ -n "$REVIEW_ID" ]]; then
+              curl --request PUT \
+                --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
+                --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+                -d "{\"message\":\"Thank you @${FIRST_APPROVER} and @${{ github.actor }} for your approvals, this pull request is now approved to merge during release.\",\"event\":\"DISMISS\"}"
+            else
+              echo "No active CHANGES_REQUESTED review found to dismiss for PR ${{ github.event.issue.number }}"
+            fi
           else
             echo "duplicate review detected from the same user ${FIRST_APPROVER} and ${{ github.actor }}"
           fi
@@ -203,10 +207,14 @@ jobs:
             --url 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews' \
             --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
             > reviews.json
-          REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]").id' | tail -n 1)
-          curl --request PUT \
-            --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
-            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
-            -d '{"message":"Pull Request unblocked - code freeze is over.","event":"DISMISS"}'
+          REVIEW_ID=$(cat reviews.json | jq '.[] | select( .user.login == "github-actions[bot]" and .state == "CHANGES_REQUESTED") | .id' | tail -n 1)
+          if [[ -n "$REVIEW_ID" ]]; then
+            curl --request PUT \
+              --url "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews/${REVIEW_ID}/dismissals" \
+              --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' --header "Accept: application/vnd.github+json" \
+              -d '{"message":"Pull Request unblocked - code freeze is over.","event":"DISMISS"}'
+          else
+            echo "No active CHANGES_REQUESTED review found to dismiss for PR ${{ github.event.issue.number }}"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
